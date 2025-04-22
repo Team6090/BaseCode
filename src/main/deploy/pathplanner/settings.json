@@ -1,0 +1,49 @@
+{
+  "robotWidth": 0.889,
+  "robotLength": 0.9398,
+  "holonomicMode": true,
+  "pathFolders": [
+    "AlgaeToProcessorPaths",
+    "CoralStationToReefPaths",
+    "AlgaeToBargePaths",
+    "ProcessorToAlgaePaths",
+    "ProcessorToCoralStationPaths",
+    "ReefToAlgaePaths",
+    "ReefToCoralStationPaths",
+    "StartLineToReefPaths",
+    "TuningPaths"
+  ],
+  "autoFolders": [
+    "MiddleAutos",
+    "TestingAutos",
+    "OutsideAutos",
+    "TuningAutos"
+  ],
+  "defaultMaxVel": 2.0,
+  "defaultMaxAccel": 2.0,
+  "defaultMaxAngVel": 540.0,
+  "defaultMaxAngAccel": 720.0,
+  "defaultNominalVoltage": 12.0,
+  "robotMass": 58.967,
+  "robotMOI": 8.5985123493,
+  "robotTrackwidth": 0.546,
+  "driveWheelRadius": 0.049,
+  "driveGearing": 8.12,
+  "maxDriveSpeed": 3.553202650441572,
+  "driveMotorType": "krakenX60FOC",
+  "driveCurrentLimit": 47.0,
+  "wheelCOF": 1.542,
+  "flModuleX": 0.301,
+  "flModuleY": 0.2759583,
+  "frModuleX": 0.3013583,
+  "frModuleY": -0.2759583,
+  "blModuleX": -0.3013583,
+  "blModuleY": 0.2759583,
+  "brModuleX": -0.3013583,
+  "brModuleY": -0.2759583,
+  "bumperOffsetX": 0.0,
+  "bumperOffsetY": 0.0,
+  "robotFeatures": [
+    "{\"name\":\"Line\",\"type\":\"line\",\"data\":{\"start\":{\"x\":0.0,\"y\":0.032},\"end\":{\"x\":0.47,\"y\":0.032},\"strokeWidth\":0.02}}"
+  ]
+}
