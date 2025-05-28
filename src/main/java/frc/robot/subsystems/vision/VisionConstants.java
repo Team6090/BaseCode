@@ -64,7 +64,6 @@ public class VisionConstants {
           null,
           new GoalEndState(0, new Rotation2d()));
 
-  // TODO Add the rest of the tag poses to the array
   public static Pose2d[] tagPoses = {
     new Pose2d(16.697198, 0.65532, new Rotation2d(Math.toRadians(126))), // Tag 1
     new Pose2d(16.697198, 7.39648, new Rotation2d(Math.toRadians(234))), // Tag 2
