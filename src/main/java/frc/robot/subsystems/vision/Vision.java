@@ -36,16 +36,17 @@ import org.littletonrobotics.junction.Logger;
 public class Vision extends SubsystemBase {
   private final Drive drive;
   private final VisionIO[] io;
+  private final String cameraSystem;
   private final VisionIOInputsAutoLogged[] inputs;
   private final Alert[] disconnectedAlerts;
   public static int currentSeenTagId;
-  private static int delayVisionPoseByLoops = 10;
-  private static int currentLoopCycle = 0;
+  private static boolean sendSnapshotToDrivetrain = false;
   public static Rotation2d oppositeRotationFromSeenTag;
 
   public Vision(Drive drive, VisionIO... io) {
     this.drive = drive;
     this.io = io;
+    this.cameraSystem = io[0].getVisionType();
 
     // Initialize inputs
     this.inputs = new VisionIOInputsAutoLogged[io.length];
@@ -71,7 +72,7 @@ public class Vision extends SubsystemBase {
     return inputs[cameraIndex].latestTargetObservation.tx();
   }
 
-  public static int getCameraTagId(String cameraName) {
+  public static int getCameraTagIdLimelight(String cameraName) {
     switch ((int)
         NetworkTableInstance.getDefault().getTable(cameraName).getEntry("tid").getInteger(23)) {
       case -1:
@@ -82,9 +83,20 @@ public class Vision extends SubsystemBase {
     }
   }
 
-  public static int seenTagId() {
-    int frontLeftCameraSeenTagID = getCameraTagId(frontLeftLimelightName);
-    int frontRightCameraSeenTagID = getCameraTagId(frontRightLimelightName);
+  /** Index 0 is front left, 1 is front right, 2 is rear */
+  public int getCameraTagIdPhotonVision(int cameraIndex) {
+    return inputs[cameraIndex].visibleTagId;
+  }
+
+  public int seenTagId() {
+    int frontLeftCameraSeenTagID, frontRightCameraSeenTagID;
+    if (cameraSystem != "photonvision") {
+      frontLeftCameraSeenTagID = getCameraTagIdLimelight(frontLeftLimelightName);
+      frontRightCameraSeenTagID = getCameraTagIdLimelight(frontRightLimelightName);
+    } else {
+      frontLeftCameraSeenTagID = getCameraTagIdPhotonVision(0);
+      frontRightCameraSeenTagID = getCameraTagIdPhotonVision(1);
+    }
     if (frontLeftCameraSeenTagID != 23) {
       return frontLeftCameraSeenTagID;
     } else if (frontRightCameraSeenTagID != 23) {
@@ -94,12 +106,18 @@ public class Vision extends SubsystemBase {
     }
   }
 
-  public static Rotation2d rotationOppositeToTagRotation2d(int... tagId) {
+  public Rotation2d rotationOppositeToTagRotation2d(int... tagId) {
     if (tagId.length > 0) {
       return tagPoses[tagId[0] - 1].getRotation().plus(new Rotation2d(Math.PI));
     } else {
-      int frontLeftCameraSeenTagID = getCameraTagId(frontLeftLimelightName);
-      int frontRightCameraSeenTagID = getCameraTagId(frontRightLimelightName);
+      int frontLeftCameraSeenTagID, frontRightCameraSeenTagID;
+      if (cameraSystem != "photonvision") {
+        frontLeftCameraSeenTagID = getCameraTagIdLimelight(frontLeftLimelightName);
+        frontRightCameraSeenTagID = getCameraTagIdLimelight(frontRightLimelightName);
+      } else {
+        frontLeftCameraSeenTagID = getCameraTagIdPhotonVision(0);
+        frontRightCameraSeenTagID = getCameraTagIdPhotonVision(1);
+      }
       if (frontLeftCameraSeenTagID < 24) {
         return tagPoses[frontLeftCameraSeenTagID - 1].getRotation().plus(new Rotation2d(Math.PI));
       } else if (frontRightCameraSeenTagID < 24) {
@@ -115,7 +133,6 @@ public class Vision extends SubsystemBase {
     currentSeenTagId = seenTagId();
     oppositeRotationFromSeenTag = rotationOppositeToTagRotation2d();
     SmartDashboard.putNumber("SeenTagID", currentSeenTagId);
-    Vision.currentLoopCycle++;
     for (int i = 0; i < io.length; i++) {
       io[i].updateInputs(inputs[i]);
       Logger.processInputs("Vision/Camera" + Integer.toString(i), inputs[i]);
@@ -190,13 +207,13 @@ public class Vision extends SubsystemBase {
           angularStdDev *= cameraStdDevFactors[cameraIndex];
         }
 
-        if (Vision.currentLoopCycle >= Vision.delayVisionPoseByLoops - 1) {
+        if (Vision.sendSnapshotToDrivetrain) {
           // Send vision observation
           drive.addVisionMeasurement(
               observation.pose().toPose2d(),
               observation.timestamp(),
               VecBuilder.fill(linearStdDev, linearStdDev, angularStdDev));
-          Vision.currentLoopCycle = 0;
+          Vision.sendSnapshotToDrivetrain = false;
         }
       }
 
@@ -231,7 +248,7 @@ public class Vision extends SubsystemBase {
         "Vision/Summary/RobotPosesRejected",
         allRobotPosesRejected.toArray(new Pose3d[allRobotPosesRejected.size()]));
 
-    SmartDashboard.putNumber("currentLoop", Vision.currentLoopCycle);
+    SmartDashboard.putBoolean("sendSnapshotToDrivetrain", Vision.sendSnapshotToDrivetrain);
   }
 
   @FunctionalInterface
@@ -240,5 +257,9 @@ public class Vision extends SubsystemBase {
         Pose2d visionRobotPoseMeters,
         double timestampSeconds,
         Matrix<N3, N1> visionMeasurementStdDevs);
+  }
+
+  public static void sendSnapshotToDrivetrain() {
+    sendSnapshotToDrivetrain = true;
   }
 }

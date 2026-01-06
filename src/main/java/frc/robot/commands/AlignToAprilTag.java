@@ -22,15 +22,17 @@ public class AlignToAprilTag extends Command {
   private SideOfTag alignmentSide;
   private Timer stopTimer;
   private Drive drive;
+  private Vision vision;
 
   /**
    * Drive robot to specific pose based on AprilTag and designated side of tag
    *
    * @param drive : Drive subsystem
+   * @param vision : Vision subsystem
    * @param alignmentSide : Side of AprilTag to align with (left, middle, right)
    * @param tagId : Optional; Force-align to specific tag instead of using Limelight
    */
-  public AlignToAprilTag(Drive drive, SideOfTag alignmentSide, int... tagId) {
+  public AlignToAprilTag(Drive drive, Vision vision, SideOfTag alignmentSide, int... tagId) {
     // Setup PID Controllers to control the robot's speed
     xController = new PIDController(12.5, 0, 0.5);
     yController = new PIDController(12.5, 0, 0.5);
@@ -38,6 +40,7 @@ public class AlignToAprilTag extends Command {
     rotController.enableContinuousInput(0, 2 * Math.PI);
     this.alignmentSide = alignmentSide;
     this.drive = drive;
+    this.vision = vision;
     if (tagId.length > 0) /* If tagId has an entry */ {
       // Use given tagId
       this.tagId = tagId[0];
@@ -65,7 +68,7 @@ public class AlignToAprilTag extends Command {
     this.adjustedPose =
         new Pose2d(
             tagPose.getTranslation().plus(targetPoseFromTag.getTranslation()),
-            Vision.rotationOppositeToTagRotation2d(tagId));
+            vision.rotationOppositeToTagRotation2d(tagId));
     // Log target pose
     Field2d field2d = new Field2d();
     SmartDashboard.putData("Field2d", field2d);

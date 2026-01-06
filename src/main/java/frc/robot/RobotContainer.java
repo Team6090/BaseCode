@@ -112,7 +112,6 @@ public class RobotContainer {
 
     NamedCommandSetup.setupNamedCommands(template);
     AutoChooserSetup.setUpSysIdPaths(drive);
-    template.templateAppend();
     configureButtonBindings();
   }
 
@@ -135,11 +134,11 @@ public class RobotContainer {
 
     mainController.a().onTrue(new SetTemplateTargetPos(TargetedPos.NONE));
 
-    mainController.leftBumper().onTrue(new AlignToAprilTag(drive, SideOfTag.LEFT));
+    mainController.leftBumper().onTrue(new AlignToAprilTag(drive, vision, SideOfTag.LEFT));
 
-    mainController.rightBumper().onTrue(new AlignToAprilTag(drive, SideOfTag.RIGHT));
+    mainController.rightBumper().onTrue(new AlignToAprilTag(drive, vision, SideOfTag.RIGHT));
 
-    mainController.back().onTrue(new AlignToAprilTag(drive, SideOfTag.MIDDLE));
+    mainController.back().onTrue(new AlignToAprilTag(drive, vision, SideOfTag.MIDDLE));
 
     mainController.leftStick().onTrue(Commands.runOnce(() -> VisionConstants.FREEME = true));
   }

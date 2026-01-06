@@ -18,7 +18,9 @@ import static edu.wpi.first.units.Units.Volt;
 import edu.wpi.first.units.Units;
 import edu.wpi.first.units.VelocityUnit;
 import edu.wpi.first.units.measure.Velocity;
+import edu.wpi.first.wpilibj.smartdashboard.Mechanism2d;
 import edu.wpi.first.wpilibj.smartdashboard.MechanismLigament2d;
+import edu.wpi.first.wpilibj.smartdashboard.MechanismRoot2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj.util.Color8Bit;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -28,14 +30,17 @@ import org.littletonrobotics.junction.Logger;
 
 public class Template extends SubsystemBase {
   public static double mechanismPosition;
+  Mechanism2d mechanismBase = new Mechanism2d(0, 0, new Color8Bit("#05b4ff"));
+  MechanismRoot2d mechanismRoot = mechanismBase.getRoot("root", 0, 0);
+  MechanismLigament2d mechanismLigament =
+      mechanismRoot.append(
+          new MechanismLigament2d("ligament", 1, 180, 10, new Color8Bit("#ff8a05")));
   private final TemplateIO io;
   private final TemplateIOInputsAutoLogged inputs = new TemplateIOInputsAutoLogged();
 
-  private final MechanismLigament2d templateLigament =
-      new MechanismLigament2d("template", 0.3, 0, 3, new Color8Bit(0, 255, 0));
-
   public Template(TemplateIO io) {
     this.io = io;
+    SmartDashboard.putNumber("MechanismLength", 0.1);
   }
 
   SysIdRoutine sysId =
@@ -62,6 +67,9 @@ public class Template extends SubsystemBase {
   public void periodic() {
     io.updateInputs(inputs);
     Logger.processInputs("Template", inputs);
+    SmartDashboard.putData("Mechanism", mechanismBase);
+    mechanismLigament.setAngle(90);
+    mechanismLigament.setLength(SmartDashboard.getNumber("MechanismLength", 0.1));
     SmartDashboard.putNumber("TemplateMotorRot", getMotorRot());
     SmartDashboard.putNumber("TemplateEncoderRot", getEncoderRot());
     SmartDashboard.putNumber("TemplateActualRot", getActualRot());
@@ -87,6 +95,4 @@ public class Template extends SubsystemBase {
   public double getActualRot() {
     return io.getActualRot();
   }
-
-  public void templateAppend() {}
 }
